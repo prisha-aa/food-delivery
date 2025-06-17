@@ -1,0 +1,11 @@
+# Ignore node_modules for all services
+orderService/node_modules/
+inventoryService/node_modules/
+paymentService/node_modules/
+notificationService/node_modules/
+
+# Ignore .env files
+orderService/.env
+inventoryService/.env
+paymentService/.env
+notificationService/.env
