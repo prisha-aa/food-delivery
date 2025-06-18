@@ -1,6 +1,10 @@
+const path = require('path');
+// require('dotenv').config();
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+
 // inventoryService/index.js
 const AWS = require('../shared/aws-config');
-require('dotenv').config();
+// require('dotenv').config();
 
 const sqs = new AWS.SQS();
 const sns = new AWS.SNS();

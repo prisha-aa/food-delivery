@@ -2,6 +2,9 @@ require('dotenv').config(); // Load environment variables
 
 const AWS = require('aws-sdk');
 
+console.log("Loaded AWS key:", process.env.AWS_ACCESS_KEY_ID);
+
+
 // Configure AWS using values from .env
 AWS.config.update({
   region: process.env.AWS_REGION || 'us-east-1',

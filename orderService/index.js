@@ -1,8 +1,10 @@
+const path = require('path');
+// require('dotenv').config();
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 // orderService/index.js
 const express = require('express');
 const AWS = require('../shared/aws-config');
 const { v4: uuidv4 } = require('uuid'); // Unique ID generator
-require('dotenv').config();
 
 const app = express();
 app.use(express.json());

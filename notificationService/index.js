@@ -1,8 +1,13 @@
+const path = require('path');
+// require('dotenv').config();
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+console.log('Loaded AWS key:', process.env.AWS_ACCESS_KEY_ID);
 // Import AWS SDK with shared custom configuration
 const AWS = require('../shared/aws-config');
 
 // Load environment variables from .env file
-require('dotenv').config();
+// require('dotenv').config();
+
 
 // Initialize the SQS service object
 const sqs = new AWS.SQS();
