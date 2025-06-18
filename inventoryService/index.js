@@ -1,13 +1,13 @@
+
 const path = require('path');
-// require('dotenv').config();
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
-// inventoryService/index.js
+// Load AWS SDK config
 const AWS = require('../shared/aws-config');
-// require('dotenv').config();
 
 const sqs = new AWS.SQS();
 const sns = new AWS.SNS();
+
 const QUEUE_URL = process.env.INVENTORY_QUEUE_URL;
 const INVENTORY_TOPIC_ARN = process.env.INVENTORY_TOPIC_ARN;
 
@@ -20,33 +20,52 @@ const stock = {
 };
 
 const pollMessages = async () => {
-  const res = await sqs.receiveMessage({
-    QueueUrl: QUEUE_URL,
-    MaxNumberOfMessages: 1,
-    WaitTimeSeconds: 10,
-  }).promise();
+  console.log("📡 Polling inventory queue...");
 
-  const messages = res.Messages || [];
-
-  for (const msg of messages) {
-    const order = JSON.parse(msg.Body);
-    const inStock = order.items.every(item => stock[item.name] >= item.quantity);
-
-    const result = {
-      orderId: order.orderId,
-      amount: order.amount,
-      status: inStock ? 'confirmed' : 'failed'
-    };
-
-    await sns.publish({
-      TopicArn: INVENTORY_TOPIC_ARN,
-      Message: JSON.stringify(result),
-    }).promise();
-
-    await sqs.deleteMessage({
+  try {
+    const res = await sqs.receiveMessage({
       QueueUrl: QUEUE_URL,
-      ReceiptHandle: msg.ReceiptHandle,
+      MaxNumberOfMessages: 1,
+      WaitTimeSeconds: 10,
     }).promise();
+
+    const messages = res.Messages || [];
+
+    for (const msg of messages) {
+      console.log("📨 Received message:", msg.Body);
+
+      const order = JSON.parse(msg.Body);
+
+      const inStock = order.items.every(item => {
+        const available = stock[item.name] || 0;
+        console.log(`🔍 Checking stock for ${item.name}: Needed=${item.quantity}, Available=${available}`);
+        return available >= item.quantity;
+      });
+
+      const result = {
+        orderId: order.orderId,
+        amount: order.amount,
+        status: inStock ? 'confirmed' : 'failed',
+      };
+
+      console.log(`📦 Inventory check result for Order ${order.orderId}: ${result.status}`);
+
+      await sns.publish({
+        TopicArn: INVENTORY_TOPIC_ARN,
+        Message: JSON.stringify(result),
+      }).promise();
+
+      console.log("📤 Published inventory result to SNS");
+
+      await sqs.deleteMessage({
+        QueueUrl: QUEUE_URL,
+        ReceiptHandle: msg.ReceiptHandle,
+      }).promise();
+
+      console.log("✅ Message deleted from SQS");
+    }
+  } catch (err) {
+    console.error("🔥 Error while polling inventory queue:", err);
   }
 
   setImmediate(pollMessages);
