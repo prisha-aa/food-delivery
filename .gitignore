@@ -9,3 +9,5 @@ orderService/.env
 inventoryService/.env
 paymentService/.env
 notificationService/.env
+
+**/.env
