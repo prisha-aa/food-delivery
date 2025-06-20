@@ -19,6 +19,7 @@ const stock = {
   pizza: 10,
 };
 
+// Function to continuously poll the inventory queue for new messages
 const pollMessages = async () => {
   console.log("📡 Polling inventory queue...");
 
